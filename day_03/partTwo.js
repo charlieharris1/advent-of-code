@@ -22,33 +22,19 @@ const countOccurrences = (idx) =>
     0
   );
 
-const recurse = (idx, acc) => {
-  if (R.length(acc.most) === 1)
-  if (idx < 3) {
-    const { most: mostOccurrences, least: leastOccurrences } = R.mapObjIndexed(
-      (rows, key) => {
-        const mapper =
-          key === "most"
-            ? (v) => (Math.sign(v) === -1 ? 0 : 1)
-            : (v) => (Math.sign(v) === -1 ? 1 : 0);
+const recurse = (occurrenceCounter) => (idx, acc) => {
+  if (R.length(acc) === 1) return acc;
+  const occurrences = R.compose(occurrenceCounter, countOccurrences(idx))(acc);
 
-        return R.compose(mapper, countOccurrences(idx))(rows);
-      }
-    )(acc);
-
-    return recurse(idx + 1, {
-      most: R.filter((row) => Array.from(row, Number)[idx] === mostOccurrences)(
-        acc.most
-      ),
-      least: R.filter(
-        (row) => Array.from(row, Number)[idx] === leastOccurrences
-      )(acc.least),
-    });
-  }
-
-  return acc;
+  return recurse(occurrenceCounter)(
+    idx + 1,
+    R.filter((row) => Array.from(row, Number)[idx] === occurrences)(acc)
+  );
 };
 
-console.log(recurse(0, { most: report, least: report }));
+const most = recurse((v) => (Math.sign(v) === -1 ? 0 : 1))(0, report);
+const least = recurse((v) => (Math.sign(v) === -1 ? 1 : 0))(0, report);
+
+console.log(parseInt(most, 2) * parseInt(least, 2))
 // Most common: [ 1, 0, 1, 1, 0 ]
 // Least common: [ 0, 1, 0, 0, 1 ]
