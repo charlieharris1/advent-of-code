@@ -17,24 +17,27 @@ const report = [
 ];
 
 const countOccurrences = (idx) =>
-  R.reduce(
-    (acc, value) => (Array.from(value, Number)[idx] ? R.inc(acc) : R.dec(acc)),
-    0
-  );
+  R.reduce((acc, value) => (value[idx] ? R.inc(acc) : R.dec(acc)), 0);
 
 const recurse = (occurrenceCounter) => (idx, acc) => {
   if (R.length(acc) === 1) return acc;
-  const occurrences = R.compose(occurrenceCounter, countOccurrences(idx))(acc);
+  const mostCommonNum = R.compose(occurrenceCounter, countOccurrences(idx))(acc);
 
   return recurse(occurrenceCounter)(
     idx + 1,
-    R.filter((row) => Array.from(row, Number)[idx] === occurrences)(acc)
+    R.filter((value) => value[idx] === mostCommonNum)(acc)
   );
 };
 
-const most = recurse((v) => (Math.sign(v) === -1 ? 0 : 1))(0, report);
-const least = recurse((v) => (Math.sign(v) === -1 ? 1 : 0))(0, report);
+const transformedReport = R.map((r) => Array.from(r, Number))(report);
 
-console.log(parseInt(most, 2) * parseInt(least, 2))
-// Most common: [ 1, 0, 1, 1, 0 ]
-// Least common: [ 0, 1, 0, 0, 1 ]
+const [most] = recurse((v) => (Math.sign(v) === -1 ? 0 : 1))(
+  0,
+  transformedReport
+);
+const [least] = recurse((v) => (Math.sign(v) === -1 ? 1 : 0))(
+  0,
+  transformedReport
+);
+
+console.log(parseInt(R.join("")(most), 2) * parseInt(R.join("")(least), 2));
